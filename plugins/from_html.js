@@ -456,7 +456,7 @@
 						});
 						renderer.y = renderer.pdf.lastCellPos.y + renderer.pdf.lastCellPos.h + 20;
 					} else if (cn.nodeName === "OL" || cn.nodeName === "UL") {
-						listCount = 1;
+						listCount = parseInt(cn.getAttribute("start"), 10) || 1;
 						if (!elementHandledElsewhere(cn, renderer, elementHandlers)) {
 							DrillForContent(cn, renderer, elementHandlers);
 						}
