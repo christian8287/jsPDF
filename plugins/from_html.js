@@ -313,6 +313,24 @@
 		EMBED    : 1,
 		SELECT   : 1
 	};
+  
+  FindNode = function (element, nodename) {
+    if(!element || !nodename) {
+      return null;
+    }
+    
+    var parent = element.parentNode;
+    while(parent) {
+      if(parent && parent.nodeName.toUpperCase() === nodename.toUpperCase()) {
+        return parent;
+      }
+      
+      parent = parent.parentNode;
+    }
+    
+    return null;
+  };
+  
 	var listCount = 1;
 	DrillForContent = function (element, renderer, elementHandlers) {
 		var cn,
@@ -479,8 +497,10 @@
 					}
 				} else if (cn.nodeType === 3) {
 					var value = cn.nodeValue;
-					if (cn.nodeValue && cn.parentNode.nodeName === "LI") {
-						if (cn.parentNode.parentNode.nodeName === "OL") {
+          var elLi = FindNode(cn, "LI");
+					if (cn.nodeValue && elLi) {
+            var elOl = FindNode(elLi, "OL");
+						if (elOl) {
 							value = listCount++ + '. ' + value;
 						} else {
 							var fontSize = fragmentCSS["font-size"];
