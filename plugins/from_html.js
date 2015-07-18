@@ -507,9 +507,7 @@
 							offsetX = (3 - fontSize * 0.75) * renderer.pdf.internal.scaleFactor;
 							offsetY = fontSize * 0.75 * renderer.pdf.internal.scaleFactor;
 							radius = fontSize * 1.74 / renderer.pdf.internal.scaleFactor;
-							cb = function (x, y) {
-								this.pdf.circle(x + offsetX, y + offsetY, radius, 'FD');
-							};
+              renderer.addCircle(renderer.x - 2, renderer.y + offsetY, radius, 'FD');
 						}
 					}
 					// Only add the text if the text node is in the body element
@@ -1022,6 +1020,9 @@
 	Renderer.prototype.addText = function (text, css) {
 		this.paragraph.text.push(text);
 		return this.paragraph.style.push(css);
+	};
+  Renderer.prototype.addCircle = function (x,y,r,style) {
+		this.pdf.circle(x,y,r,style);
 	};
 	FontNameDB = {
 		helvetica         : "helvetica",
