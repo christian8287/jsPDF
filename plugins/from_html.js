@@ -222,6 +222,8 @@
 		css["clear"] = ClearMap[computedCSSElement("clear")] || "none";
 		
 		css["color"]  = computedCSSElement("color");
+    
+    css["list-style-type"] = computedCSSElement("list-style-type") || "decimal";
 
 		return css;
 	};
@@ -474,7 +476,10 @@
 						});
 						renderer.y = renderer.pdf.lastCellPos.y + renderer.pdf.lastCellPos.h + 20;
 					} else if (cn.nodeName === "OL" || cn.nodeName === "UL") {
-						listCount = parseInt(cn.getAttribute("start"), 10) || 1;
+            var css = GetCSS(cn);
+            
+						listCount = css["list-style-type"] === "decimal" ? (parseInt(cn.getAttribute("start"), 10) || 1) : 
+                  (cn.getAttribute("start") ? (String.fromCharCode(96 + parseInt(cn.getAttribute("start")))) : "a");
 						if (!elementHandledElsewhere(cn, renderer, elementHandlers)) {
 							DrillForContent(cn, renderer, elementHandlers);
 						}
@@ -501,7 +506,11 @@
 					if (cn.nodeValue && elLi) {
             var elOl = FindNode(elLi, "OL");
 						if (elOl) {
-							value = listCount++ + '. ' + value;
+							value = (typeof listCount === "number" ? listCount++ : listCount) + '. ' + value;
+              var css = GetCSS(elOl);
+              if(css["list-style-type"] === "lower-alpha") {
+                listCount = String.fromCharCode(listCount.charCodeAt(0) + 1);
+              }
 						} else {
 							var fontSize = fragmentCSS["font-size"];
 							offsetX = (3 - fontSize * 0.75) * renderer.pdf.internal.scaleFactor;
