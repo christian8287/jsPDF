@@ -625,7 +625,9 @@ var jsPDF = (function(global) {
 			 * is still parseable.
 			 * This will allow immediate support for unicode in document properties strings.
 			 */
-			return to8bitStream(text, flags).replace(/\\/g, '\\\\').replace(/\(/g, '\\(').replace(/\)/g, '\\)');
+			return to8bitStream(text.replace(/„/g, '\204').replace(/“/g, '\223').replace(/”/g, '\224').replace(/—/g, '\227').replace(/–/g, '\226'), flags)
+                        .replace(/\\/g, '\\\\').replace(/\(/g, '\\(').replace(/\)/g, '\\)');
+                        
 		},
 		putInfo = function() {
 			out('/Producer (jsPDF ' + jsPDF.version + ')');
