@@ -343,7 +343,8 @@
 		l,
 		px2pt,
 		table2json,
-		cb;
+		cb,
+    bulletPoint;
 		cns = element.childNodes;
 		cn = void 0;
 		fragmentCSS = GetCSS(element);
@@ -516,7 +517,12 @@
 							offsetX = (3 - fontSize * 0.75) * renderer.pdf.internal.scaleFactor;
 							offsetY = fontSize * 0.75 * renderer.pdf.internal.scaleFactor;
 							radius = fontSize * 1.74 / renderer.pdf.internal.scaleFactor;
-              renderer.addCircle(renderer.x - 2, renderer.y + offsetY, radius, 'FD');
+              bulletPoint = {
+                offsetX: offsetX,
+                offsetY: offsetY,
+                radius: radius,
+                fontSize: fontSize
+              };
 						}
 					}
 					// Only add the text if the text node is in the body element
@@ -531,7 +537,7 @@
 		}
 
 		if (isBlock) {
-			return renderer.setBlockBoundary(cb);
+			return renderer.setBlockBoundary(cb, bulletPoint);
 		}
 	};
 	images = {};
@@ -810,7 +816,7 @@
 
 		return lines;
 	};
-	Renderer.prototype.RenderTextFragment = function (text, style) {
+	Renderer.prototype.RenderTextFragment = function (text, style, bulletPoint) {
 		var defaultFontSize,
 		font,
 		maxLineHeight;
@@ -827,6 +833,10 @@
 			maxLineHeight = Math.max(maxLineHeight, style["line-height"], style["font-size"]);
 			this.pdf.internal.write(0, (-1 * defaultFontSize * maxLineHeight).toFixed(2), "Td");
 		}
+    
+    if(bulletPoint) {
+      this.addCircle(this.x - 2, this.y + bulletPoint.offsetY + bulletPoint.fontSize / 2 + 1.7, bulletPoint.radius, 'FD');
+    }
 
 		font = this.pdf.internal.getFont(style["font-family"], style["font-style"]);
 
@@ -900,7 +910,7 @@
 	},
 	
 	
-	Renderer.prototype.renderParagraph = function (cb) {
+	Renderer.prototype.renderParagraph = function (cb, bulletPoint) {
 		var blockstyle,
 		defaultFontSize,
 		fontToUnitRatio,
@@ -952,7 +962,8 @@
 		out("q", "BT 0 g", this.pdf.internal.getCoordinateString(this.x), this.pdf.internal.getVerticalCoordinateString(this.y), "Td");
 
 		//stores the current indent of cursor position
-		var currentIndent = 0;
+		var currentIndent = 0,
+      firstLineOfParagraph = true;
 
 		while (lines.length) {
 			line = lines.shift();
@@ -978,11 +989,11 @@
 			var indentMore = (Math.max(blockstyle["margin-left"] || 0, 0)) * fontToUnitRatio;
 			//move the cursor
 			out(indentMove + indentMore, (-1 * defaultFontSize * maxLineHeight).toFixed(2), "Td");
-			i = 0;
+      i = 0;
 			l = line.length;
 			while (i !== l) {
 				if (line[i][0]) {
-					this.RenderTextFragment(line[i][0], line[i][1]);
+					this.RenderTextFragment(line[i][0], line[i][1], firstLineOfParagraph === true && bulletPoint ? bulletPoint : null);
 				}
 				i++;
 			}
@@ -1012,7 +1023,7 @@
 				out("ET", "Q");
 				out("q", "BT 0 g", this.pdf.internal.getCoordinateString(this.x), this.pdf.internal.getVerticalCoordinateString(this.y), "Td");
 			}
-
+      firstLineOfParagraph = false;
 		}
 		if (cb && typeof cb === "function") {
 			cb.call(this, this.x - 9, this.y - fontSize / 2);
@@ -1020,8 +1031,8 @@
 		out("ET", "Q");
 		return this.y += paragraphspacing_after;
 	};
-	Renderer.prototype.setBlockBoundary = function (cb) {
-		return this.renderParagraph(cb);
+	Renderer.prototype.setBlockBoundary = function (cb, bulletPoint) {
+		return this.renderParagraph(cb, bulletPoint);
 	};
 	Renderer.prototype.setBlockStyle = function (css) {
 		return this.paragraph.blockstyle = css;
